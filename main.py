@@ -16,7 +16,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
         data = json.loads(post_data)
         repo_name = data.get('repository', {}).get('name')
         commit_message = data.get('head_commit', {}).get('message')
-        print(f"New commit in repository '{repo_name}': {commit_message}")
+        print(f"New commit in repository '{repo_name}': {data}")
 
         # Send a response
         response_message = {'status': 'success'}
@@ -30,4 +30,3 @@ def run(server_class=HTTPServer, handler_class=WebhookHandler, port=9090):
 
 if __name__ == '__main__':
     run()
-
