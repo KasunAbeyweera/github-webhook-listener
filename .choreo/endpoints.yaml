@@ -1,0 +1,7 @@
+version: 1
+name: github-webhook
+port: 9090
+type: REST
+networkVisibility: Public
+context: /api
+schemaFilePath:
