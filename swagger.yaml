@@ -1,0 +1,38 @@
+---
+definitions: {}
+info:
+  description: powered by Flasgger
+  termsOfService: "/tos"
+  title: A swagger API
+  version: 0.0.1
+paths:
+  "/webhook":
+    post:
+      description: "<br/>"
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            head_commit:
+              properties:
+                message:
+                  type: string
+              type: object
+            repository:
+              properties:
+                name:
+                  type: string
+              type: object
+          type: object
+      responses:
+        '200':
+          description: Success
+          schema:
+            properties:
+              status:
+                type: string
+            type: object
+      summary: Endpoint that receives GitHub webhooks.
+swagger: '2.0'
