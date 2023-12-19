@@ -1,51 +1,33 @@
-from flask import Flask, request, jsonify
-from flasgger import Swagger
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
 
-app = Flask(__name__)
-swagger = Swagger(app)
+class WebhookHandler(BaseHTTPRequestHandler):
+    def _send_response(self, status_code, message):
+        self.send_response(status_code)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(message).encode('utf-8'))
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    """
-    Endpoint that receives GitHub webhooks.
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length).decode('utf-8')
 
-    ---
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            repository:
-              type: object
-              properties:
-                name:
-                  type: string
-                # Add more properties as needed
-            head_commit:
-              type: object
-              properties:
-                message:
-                  type: string
-                # Add more properties as needed
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          properties:
-            status:
-              type: string
-    """
-    data = request.json  # Assuming the incoming data is in JSON format
+        # Extract information from the GitHub payload
+        data = json.loads(post_data)
+        repo_name = data.get('repository', {}).get('name')
+        commit_message = data.get('head_commit', {}).get('message')
+        print(f"New commit in repository '{repo_name}': {commit_message}")
 
-    # Extract information from the GitHub payload
-    repo_name = data.get('repository', {}).get('name')
-    commit_message = data.get('head_commit', {}).get('message')
-    print(f"New commit in repository '{repo_name}': {commit_message}")
-    return jsonify({'status': 'success'})
+        # Send a response
+        response_message = {'status': 'success'}
+        self._send_response(200, response_message)
+
+def run(server_class=HTTPServer, handler_class=WebhookHandler, port=9090):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    print(f'Starting server on port {port}')
+    httpd.serve_forever()
 
 if __name__ == '__main__':
-    port = 9090
-    app.run(debug=True, port=port)
+    run()
+
